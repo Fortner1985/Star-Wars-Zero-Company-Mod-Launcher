@@ -4,8 +4,12 @@ obj/
 # ...but bin/release is our build script, not build output
 !launcher/bin/
 !launcher/bin/release
-!bin/
-!bin/deploy
+# Un-ignore ONLY the repo-root bin/ and its script. These MUST be
+# root-anchored with a leading slash: a bare "!bin/" re-includes every nested
+# bin/ directory too, which silently pulled 412 build artifacts from
+# launcher/src/*/bin/Release into a commit.
+!/bin/
+!/bin/deploy
 dist/
 *.user
 
