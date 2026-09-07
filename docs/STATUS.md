@@ -16,6 +16,10 @@ corrected here. That is the point of the file.
 | Launcher — game detection | ✅ Works | Resolves Steam via `libraryfolders.vdf`. No hardcoded paths. Builds self-contained. |
 | Launcher — health check | ✅ Works | Correctly identified the silent loader failure that cost this project hours. |
 | Launcher — toggles | ✅ Works | Parse-modify-re-emit with `.zsbak` backups. |
+| Launcher — VSync fix | ✅ Works | `bUseVSync=False` while the menu reports on. Cause of exclusive-fullscreen tearing. |
+| Launcher — quality auto-detect | ✅ Works | `bHasDoneAutoDetect=True` with both benchmark results `-1`; everything pinned to Epic unmeasured. |
+| Launcher — Squad Six support | ✅ Works | Detects, toggles, surfaces its status line. Mod itself not redistributed. |
+| Resolution-scale toggle | ❌ Removed | The game recomputes `ResolutionPercentage` at runtime and rewrites it on exit. A toggle that cannot hold its value is worse than none. |
 | Bridge — object dump | ✅ Works | Produced a 160 MB dump on request from inside a live mission. |
 | ZeroCam #4 clip-through | ⚠️ Applies, effect **unverified** | `applied=3` then `9` as more camroids spawn — exactly the tactical positioning arms. Nobody has yet seen it stop a camera going through a wall. |
 | ZeroCam #6 floaty controls | ⚠️ Applies, effect **unverified** | `applied=7` then `12`. Never tested in an exploration section, which is the only place it does anything. |

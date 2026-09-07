@@ -27,7 +27,16 @@ First public release.
   UE4SS object dump, replacing guesswork.
 - Apache 2.0 licence, NOTICE, PATENTS.md, contribution guide, issue templates.
 
+### Documentation
+- README now covers the launcher's display and performance fixes (VSync,
+  quality auto-detect) and its Squad Six support. The first version documented
+  the mod and silently omitted half of what the launcher actually does.
+
 ### Changed
+- Corrected a stale warning in the launcher UI. It read "Not yet implemented -
+  every fix loads as a stub and applies nothing", which stopped being true once
+  #4 and #6 started applying. A tool that misreports its own state is the exact
+  failure this project exists to fix.
 - `discovery_mode` now defaults to off. The object dump answered everything the
   discovery modules were written to find.
 - Stub fixes #1/#2/#3/#5 ship toggled **off**, so the log reports what is

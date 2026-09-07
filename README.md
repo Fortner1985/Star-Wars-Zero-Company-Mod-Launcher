@@ -22,6 +22,9 @@ oversold, and "untested" means untested.
 | Game detection | ✅ Confirmed | Resolves your Steam install via `libraryfolders.vdf`, any library drive |
 | Health check | ✅ Confirmed | Correctly diagnosed the silent loader failure that cost this project hours |
 | Mod toggles | ✅ Confirmed | Parses and re-emits `mods.txt` / `config.lua`, keeps `.zsbak` backups |
+| **VSync fix** | ✅ Confirmed | The in-game menu reports VSync on while the engine flag that controls it is off. Fixes the screen tearing in exclusive fullscreen. |
+| **Quality auto-detect repair** | ✅ Confirmed | Auto-detect was marked complete with both benchmark results at `-1`, pinning every quality group to Epic without ever measuring the machine. |
+| **Squad Six support** | ✅ Confirmed | Detects the mod and surfaces its self-reported status. The mod itself is third-party and not shipped here. |
 | Object dump bridge | ✅ Confirmed | Produced a 160 MB UE4SS object dump on request |
 | ZeroCam #4 — terrain clip-through | ⚠️ Applies correctly, effect unverified | Live run 2026-09-07: `applied=3` — exactly the three tactical positioning arms. Whether it *stops the clipping* is not yet confirmed. |
 | ZeroCam #6 — floaty exploration camera | ⚠️ Applies correctly, effect unverified | Live run: `applied=7`. Same caveat. |
@@ -60,7 +63,32 @@ If you hit a crash with ZeroCam enabled, please open an issue with your
 - Reads (never rewrites) third-party `zcom-mod.json` manifests, so it coexists
   with ZCOM Mod Manager instead of fighting it
 
-**ZeroCam (the mod)** — two fixes active, four stubs:
+**Display and performance fixes** — these are launcher-side, they need no mod
+running, and they are the most immediately useful thing here:
+
+- **VSync** — the in-game menu shows VSync as on while `bUseVSync` is actually
+  off. That mismatch is what produces screen tearing in exclusive fullscreen.
+  The menu tells you it is on; the engine disagrees.
+- **Quality auto-detect** — `bHasDoneAutoDetect=True` with
+  `LastGPUBenchmarkResult=-1` and `LastCPUBenchmarkResult=-1`. The game recorded
+  that it had benchmarked your machine while both results are the "never ran"
+  sentinel, so every quality group was pinned to Epic without measuring
+  anything. This forces a real benchmark on next launch.
+
+Every display change is **reversible** — the previous value is recorded before
+anything is written, and the launcher keeps a `.zsbak` of each file it edits.
+
+One thing deliberately absent: a resolution-scale toggle was built and then
+removed. The game recomputes `ResolutionPercentage` at runtime and rewrites it
+on exit, so the toggle could not hold its value. A control that silently reverts
+is worse than no control, because it looks like it worked.
+
+**Squad Six** — the six-unit deployment mod is a **third-party community mod and
+is not distributed here** (no licence file, so no redistribution right). The
+launcher detects it, toggles it, and surfaces its own status line so you can see
+whether it actually started. Our patches to it live in `patches/squad-six/`.
+
+**ZeroCam (the mod)** — two fixes active, one read-only, four stubs:
 
 - **#4 Terrain clip-through** — forces collision probing on the spring arms that
   position the tactical and exploration cameras
