@@ -105,20 +105,24 @@ public static class GameSettings
                 + $"Desired={Value(ini, "DesiredScreenWidth")}x{Value(ini, "DesiredScreenHeight")}, "
                 + $"ResolutionPercentage={Value(ini, "ResolutionPercentage")} (file states minimum {Value(ini, "MinResolutionPercentage")})"),
 
-            // Two flag pairs with the same shape as the VSync bug: one half says
-            // off, the other says on. Which half the engine actually reads is
-            // not known, so these do not pick a winner -- they set both halves
-            // to whatever the user chooses, which removes the disagreement
-            // either way.
-            new DisplayTweak("hdr_output", "HDR output (flags disagree)",
-                "bUseHDRDisplayOutput and bHDROutputEnabled hold opposite values, the same mismatch pattern as the VSync bug. This sets both together. Leave it off unless your display genuinely supports HDR.",
-                Flag(ini, "bUseHDRDisplayOutput") && Flag(ini, "bHDROutputEnabled"),
-                $"bUseHDRDisplayOutput={Value(ini, "bUseHDRDisplayOutput")}, bHDROutputEnabled={Value(ini, "bHDROutputEnabled")}"),
-
-            new DisplayTweak("dynamic_resolution", "Dynamic resolution (flags disagree)",
-                "bUseDynamicResolution and bUserDynResEnabled hold opposite values -- again the VSync pattern. This sets both together. Off means the game renders at a fixed resolution instead of quietly dropping it to hold framerate.",
-                Flag(ini, "bUseDynamicResolution") && Flag(ini, "bUserDynResEnabled"),
-                $"bUseDynamicResolution={Value(ini, "bUseDynamicResolution")}, bUserDynResEnabled={Value(ini, "bUserDynResEnabled")}"),
+            // REMOVED 2026-09-07: hdr_output and dynamic_resolution.
+            //
+            // Both flag pairs (bUseHDRDisplayOutput/bHDROutputEnabled and
+            // bUseDynamicResolution/bUserDynResEnabled) really do hold
+            // contradictory values, and the writes really did land -- the
+            // sidecar recorded originals for all four keys. The game then
+            // restored the contradiction on its next launch, twice.
+            //
+            // So the mismatch is not a stale artefact to be corrected once:
+            // something in the game's settings code rewrites one half of each
+            // pair and not the other, every launch. An ini edit cannot win
+            // against a writer that runs after it. Fixing this means reaching
+            // the code at runtime, which is mod territory, not launcher
+            // territory.
+            //
+            // Shipping a toggle that silently loses its value every launch is
+            // worse than shipping nothing, because it looks like it worked.
+            // Same reason the resolution-scale toggle was removed above.
         ];
     }
 
@@ -220,17 +224,6 @@ public static class GameSettings
                         RestoreIfKnown(originals, writes, "LastUserConfirmedResolutionSizeY");
                         RestoreIfKnown(originals, writes, "ResolutionPercentage");
                     }
-                    break;
-
-                case "hdr_output":
-                    // Both halves, same value. See the note at the tweak.
-                    Stage(ini, originals, writes, "bUseHDRDisplayOutput", on ? "True" : "False");
-                    Stage(ini, originals, writes, "bHDROutputEnabled",    on ? "True" : "False");
-                    break;
-
-                case "dynamic_resolution":
-                    Stage(ini, originals, writes, "bUseDynamicResolution", on ? "True" : "False");
-                    Stage(ini, originals, writes, "bUserDynResEnabled",    on ? "True" : "False");
                     break;
 
                 case "redo_autodetect":

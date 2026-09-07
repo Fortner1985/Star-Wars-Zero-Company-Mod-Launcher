@@ -54,6 +54,57 @@ and guessing wrong costs a build cycle.
 
 ---
 
+## The game reverts some settings by itself (measured 2026-09-07)
+
+Applied with the game closed, then launched. Reading the file afterwards:
+
+| Setting | Written | Survived? |
+|---|---|---|
+| `ResolutionSizeX/Y` = 3840x2160 | yes | present in the file, **but see below** |
+| `LastUserConfirmedResolutionSizeX/Y` | yes | present in the file, **but see below** |
+| `bUseVSync=True` | yes | **yes** |
+| `ResolutionPercentage` -> 74.01 | yes | **no** — back to 66.699997 |
+| `bUseHDRDisplayOutput` / `bHDROutputEnabled` | yes | **no** — contradictory pair restored |
+| `bUseDynamicResolution` / `bUserDynResEnabled` | yes | **no** — contradictory pair restored |
+
+The sidecar recorded originals for every one of these, so the writes did land;
+the game reverted them afterwards.
+
+This matters more than it looks. It means **the contradictory flag pairs are not
+a stale artifact — the game actively rewrites them into disagreement on every
+launch.** Something in the settings code writes one half of each pair and not
+the other. Fixing HDR and dynamic resolution by editing the ini therefore cannot
+work; whatever writes those values has to be reached at runtime instead, which
+makes them mod territory rather than launcher territory.
+
+It also confirms the resolution-scale finding for a second time. That is now
+twice a `ResolutionPercentage` edit has failed to stick, by two different
+routes. Do not attempt a third without a new mechanism.
+
+VSync sticks and is real.
+
+**Resolution is NOT confirmed, and the way it was briefly mis-confirmed is worth
+recording.** The ini reads 3840x2160 in every relevant key, and that was taken as
+proof the fix worked. The in-game menu still read 1920x1080. Process times
+settled it:
+
+```
+game process started   9:55:29
+our write (sidecar)    14:55
+ini last modified      14:56   (by the game)
+```
+
+The game launched in the same minute as the write and had already read the old
+values. The file was evidence about the file, not about the game.
+
+**The lesson, which is the same one this project keeps relearning:** a value in a
+config file is not an observed behaviour. The in-game menu is ground truth for a
+display setting, the way `applied=` in the log is ground truth for a camera fix.
+Do not mark a row confirmed from the artefact you wrote yourself.
+
+The clean test still to run: quit to desktop, confirm the file reads 3840,
+launch fresh, read the menu.
+
 ## Two corrections worth keeping
 
 Both of these were confidently believed and both were wrong. They are recorded

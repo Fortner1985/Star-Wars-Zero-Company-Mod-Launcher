@@ -22,6 +22,7 @@ oversold, and "untested" means untested.
 | Game detection | ✅ Confirmed | Resolves your Steam install via `libraryfolders.vdf`, any library drive |
 | Health check | ✅ Confirmed | Correctly diagnosed the silent loader failure that cost this project hours |
 | Mod toggles | ✅ Confirmed | Parses and re-emits `mods.txt` / `config.lua`, keeps `.zsbak` backups |
+| Render at your selected resolution | ⚠️ Writes, effect **unverified** | The ini now reads 3840x2160 in every key, but the in-game menu still showed 1920x1080 — that session had launched in the same minute as the write and never read it. Needs a clean restart to judge. |
 | **VSync fix** | ✅ Confirmed | The in-game menu reports VSync on while the engine flag that controls it is off. Fixes the screen tearing in exclusive fullscreen. |
 | **Quality auto-detect repair** | ✅ Confirmed | Auto-detect was marked complete with both benchmark results at `-1`, pinning every quality group to Epic without ever measuring the machine. |
 | **Squad Six support** | ✅ Confirmed | Detects the mod and surfaces its self-reported status. The mod itself is third-party and not shipped here. |
@@ -74,6 +75,13 @@ running, and they are the most immediately useful thing here:
   that it had benchmarked your machine while both results are the "never ran"
   sentinel, so every quality group was pinned to Epic without measuring
   anything. This forces a real benchmark on next launch.
+
+Removed after testing: HDR and dynamic-resolution flag-pair fixes. Both pairs
+genuinely disagree and our writes genuinely landed, but the game restores the
+contradiction on every launch — an ini edit cannot beat a writer that runs after
+it. A toggle that silently loses its value each launch is worse than no toggle,
+because it looks like it worked. Fixing those needs runtime access, which makes
+them mod work rather than launcher work.
 
 Every display change is **reversible** — the previous value is recorded before
 anything is written, and the launcher keeps a `.zsbak` of each file it edits.

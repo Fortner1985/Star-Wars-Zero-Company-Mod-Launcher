@@ -35,15 +35,25 @@ First public release.
   `MinResolutionPercentage=74.01`, which makes it a bug rather than a taste
   preference. The fix only ever raises the scale to the game's own stated
   minimum, never to 100: choosing a performance level is the user's call.
-- **HDR output** and **Dynamic resolution** flag-pair fixes. Both pairs
-  (`bUseHDRDisplayOutput`/`bHDROutputEnabled`,
-  `bUseDynamicResolution`/`bUserDynResEnabled`) hold contradictory values, the
-  same shape as the VSync bug. These deliberately do not pick a winner — which
-  half the engine reads is unknown — they set both halves together so the
-  disagreement is gone either way.
+- **HDR output** and **Dynamic resolution** flag-pair fixes were added and then
+  **removed the same day** after testing. Both pairs genuinely disagree and the
+  writes genuinely landed — the sidecar recorded originals for all four keys —
+  but the game restored the contradiction on its next launch. It rewrites one
+  half of each pair and not the other, every time, so an ini edit cannot win.
+  Fixing them requires runtime access. Removed rather than shipped, because a
+  toggle that quietly loses its value looks like it worked.
 - `ZeroSuiteBridge` is now in the repository. The launcher's dump buttons depend
   on it and it was not shipping.
 - `bin/deploy` — one command to copy mods into the game folder.
+
+### UI
+- The three panels are now `Grid` rather than `StackPanel`. A `ScrollViewer`
+  inside a `StackPanel` is given infinite height and therefore never scrolls —
+  it overflows and gets clipped, which is what hid the newest display fixes
+  off the bottom of the window. All three columns had the latent bug.
+- The Apply status line no longer reports "Saved" when display changes were
+  skipped because the game was running. It now says they were skipped. A tool
+  built to catch programs misreporting their own state does not get to do it.
 
 ### Documentation
 - README now covers the launcher's display and performance fixes (VSync,

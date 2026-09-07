@@ -230,14 +230,27 @@ public partial class MainWindow : Window
                 LuaConfig.Write(ZeroCamConfig, _fixes.ToDictionary(f => f.Key, f => f.Value));
 
             var tweaks = GameSettings.Read();
-            if (tweaks.Count == _display.Count && !GameSettings.IsGameRunning())
+            var gameRunning = GameSettings.IsGameRunning();
+            var displayApplied = false;
+
+            if (tweaks.Count == _display.Count && !gameRunning)
             {
                 GameSettings.Apply(
                     tweaks.Select((t, i) => (t.Key, _display[i].Value))
                           .ToDictionary(x => x.Key, x => x.Item2));
+                displayApplied = true;
             }
 
-            StatusText.Text = "Saved. Restart the game to apply.";
+            // Say what actually happened. Reporting "Saved" while the display
+            // section was skipped is the same failure this tool exists to
+            // catch -- a program giving a confident answer about a state it
+            // did not achieve.
+            StatusText.Text =
+                gameRunning && _display.Count > 0
+                    ? "Mods saved. Display changes SKIPPED - the game is running."
+                    : displayApplied
+                        ? "Saved. Restart the game to apply."
+                        : "Mods saved.";
         }
         catch (Exception ex)
         {
