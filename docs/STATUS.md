@@ -19,6 +19,8 @@ corrected here. That is the point of the file.
 | Launcher — VSync fix | ✅ Works | `bUseVSync=False` while the menu reports on. Cause of exclusive-fullscreen tearing. |
 | Launcher — quality auto-detect | ✅ Works | `bHasDoneAutoDetect=True` with both benchmark results `-1`; everything pinned to Epic unmeasured. |
 | Launcher — Squad Six support | ✅ Works | Detects, toggles, surfaces its status line. Mod itself not redistributed. |
+| Launcher — render resolution | ⚠️ Built, **untested** | Sets `ResolutionSizeX/Y` to the selected resolution and lifts `ResolutionPercentage` to the game's stated minimum. Nobody has launched with it yet. |
+| Launcher — HDR / dynres flag pairs | ⚠️ Built, **untested** | Sets both halves of each contradictory pair together. Which half the engine reads is still unknown. |
 | Resolution-scale toggle | ❌ Removed | The game recomputes `ResolutionPercentage` at runtime and rewrites it on exit. A toggle that cannot hold its value is worse than none. |
 | Bridge — object dump | ✅ Works | Produced a 160 MB dump on request from inside a live mission. |
 | ZeroCam #4 clip-through | ⚠️ Applies, effect **unverified** | `applied=3` then `9` as more camroids spawn — exactly the tactical positioning arms. Nobody has yet seen it stop a camera going through a wall. |
@@ -96,6 +98,16 @@ does not save you — a write to freed memory takes the process down before Lua
 can catch anything.
 
 ---
+
+## One source of truth
+
+`mod/` and `launcher/` in this repo are the source. The copies in the game
+folder are deployment targets. Use `bin/deploy` and
+`launcher/bin/release`; do not edit the deployed copies.
+
+This rule was written after a session in which two launcher trees and three
+copies of the same Lua files existed at once, and the wrong one got tested
+twice — once wasting a full game restart on unchanged code.
 
 ## Things a newcomer will get wrong
 

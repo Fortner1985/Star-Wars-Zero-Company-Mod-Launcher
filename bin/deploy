@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Copy the mod scripts from this repo into the game's UE4SS Mods folder.
+#
+# Exists because this project spent a session with three copies of the same
+# Lua files -- a dev tree, the repo, and the deployed copy -- and more than
+# once tested the wrong one. There is now one source of truth: this repo.
+# Everything else is a deployment target.
+#
+# Usage:  bin/deploy "/c/Program Files (x86)/Steam/steamapps/common/Star Wars Zero Company"
+# or set ZEROCOMPANY_DIR and run with no arguments.
+set -e
+
+GAME="${1:-$ZEROCOMPANY_DIR}"
+if [ -z "$GAME" ]; then
+  echo "usage: bin/deploy <game folder>   (or set ZEROCOMPANY_DIR)" >&2
+  exit 2
+fi
+
+MODS="$GAME/SWZeroCompany/Binaries/Win64/ue4ss/Mods"
+if [ ! -d "$MODS" ]; then
+  echo "not found: $MODS" >&2
+  echo "Is UE4SS installed? Recent builds use the ue4ss/ subfolder." >&2
+  exit 1
+fi
+
+cd "$(dirname "$0")/.."
+
+for mod in ZeroCam ZeroSuiteBridge; do
+  echo "-> $mod"
+  mkdir -p "$MODS/$mod/Scripts/fixes"
+  cp mod/"$mod"/Scripts/*.lua "$MODS/$mod/Scripts/"
+  if [ -d mod/"$mod"/Scripts/fixes ]; then
+    cp mod/"$mod"/Scripts/fixes/*.lua "$MODS/$mod/Scripts/fixes/"
+  fi
+done
+
+echo
+echo "Deployed. Reminder: UE4SS loads Lua once at process start."
+echo "Reloading a save does NOT reload a mod -- exit the game to desktop first."

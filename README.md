@@ -88,6 +88,11 @@ is not distributed here** (no licence file, so no redistribution right). The
 launcher detects it, toggles it, and surfaces its own status line so you can see
 whether it actually started. Our patches to it live in `patches/squad-six/`.
 
+**ZeroSuiteBridge (the mod)** — a small companion mod that lets the launcher
+request UE4SS dumps from inside a running mission. It polls for a request file
+rather than acting at startup, on purpose: the dumpers only record what is
+currently loaded, so a menu-time dump misses every combat class.
+
 **ZeroCam (the mod)** — two fixes active, one read-only, four stubs:
 
 - **#4 Terrain clip-through** — forces collision probing on the spring arms that
@@ -134,6 +139,20 @@ happens rather than assuming ZeroCam regressed.
 next actions in priority order, the crash post-mortem, two corrections to
 things that were confidently believed and wrong, and the mistakes a newcomer
 will make. Read it before touching anything.
+
+## Repository layout
+
+One source of truth. `mod/` is the source for the Lua mods, `launcher/` for the
+launcher; the copies inside the game folder are deployment targets, never edited
+directly.
+
+```
+bin/deploy "<game folder>"     copy mod/ into the game's ue4ss/Mods
+cd launcher && bash bin/release    build the launcher -> launcher/dist/
+```
+
+This project spent a session with three copies of the same Lua files and tested
+the wrong one more than once. `bin/deploy` exists so that cannot happen again.
 
 ## Contributing
 

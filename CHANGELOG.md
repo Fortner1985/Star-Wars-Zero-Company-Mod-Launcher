@@ -27,6 +27,24 @@ First public release.
   UE4SS object dump, replacing guesswork.
 - Apache 2.0 licence, NOTICE, PATENTS.md, contribution guide, issue templates.
 
+### Added (launcher display fixes)
+- **Render at the resolution you asked for.** The file recorded
+  `DesiredScreenWidth=3840` while `ResolutionSizeX=1920`, with
+  `ResolutionPercentage=66.7` applied on top — an internal render near 1280x720
+  on a 4K panel. That percentage was also *below* the file's own
+  `MinResolutionPercentage=74.01`, which makes it a bug rather than a taste
+  preference. The fix only ever raises the scale to the game's own stated
+  minimum, never to 100: choosing a performance level is the user's call.
+- **HDR output** and **Dynamic resolution** flag-pair fixes. Both pairs
+  (`bUseHDRDisplayOutput`/`bHDROutputEnabled`,
+  `bUseDynamicResolution`/`bUserDynResEnabled`) hold contradictory values, the
+  same shape as the VSync bug. These deliberately do not pick a winner — which
+  half the engine reads is unknown — they set both halves together so the
+  disagreement is gone either way.
+- `ZeroSuiteBridge` is now in the repository. The launcher's dump buttons depend
+  on it and it was not shipping.
+- `bin/deploy` — one command to copy mods into the game folder.
+
 ### Documentation
 - README now covers the launcher's display and performance fixes (VSync,
   quality auto-detect) and its Squad Six support. The first version documented

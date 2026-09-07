@@ -94,10 +94,77 @@ public static class GameSettings
                 $"bUseVSync={Value(ini, "bUseVSync")}, menu shows VSyncRate={Value(ini, "VSyncRate")}"),
 
             new DisplayTweak("redo_autodetect", "Re-run quality auto-detect",
-                "Auto-detect is marked complete but both benchmark results are -1, so every quality group was pinned to Epic without measuring this machine. Enabling this makes the game benchmark again on next launch.",
+                "Auto-detect is marked complete but both benchmark results are -1, the never-ran sentinel, so the quality preset was applied without ever measuring this machine. Enabling this makes the game benchmark again on next launch.",
                 !Flag(ini, "bHasDoneAutoDetect"),
-                $"bHasDoneAutoDetect={Value(ini, "bHasDoneAutoDetect")}, GPU={Value(ini, "LastGPUBenchmarkResult")}, CPU={Value(ini, "LastCPUBenchmarkResult")}"),
+                $"bHasDoneAutoDetect={Value(ini, "bHasDoneAutoDetect")}, GPU={Value(ini, "LastGPUBenchmarkResult")}, CPU={Value(ini, "LastCPUBenchmarkResult")}, preset={Value(ini, "AutoDetectPreset")}"),
+
+            new DisplayTweak("render_resolution", "Render at the resolution you asked for",
+                ResolutionSummary(ini),
+                RenderMatchesDesired(ini),
+                $"ResolutionSize={Value(ini, "ResolutionSizeX")}x{Value(ini, "ResolutionSizeY")}, "
+                + $"Desired={Value(ini, "DesiredScreenWidth")}x{Value(ini, "DesiredScreenHeight")}, "
+                + $"ResolutionPercentage={Value(ini, "ResolutionPercentage")} (file states minimum {Value(ini, "MinResolutionPercentage")})"),
+
+            // Two flag pairs with the same shape as the VSync bug: one half says
+            // off, the other says on. Which half the engine actually reads is
+            // not known, so these do not pick a winner -- they set both halves
+            // to whatever the user chooses, which removes the disagreement
+            // either way.
+            new DisplayTweak("hdr_output", "HDR output (flags disagree)",
+                "bUseHDRDisplayOutput and bHDROutputEnabled hold opposite values, the same mismatch pattern as the VSync bug. This sets both together. Leave it off unless your display genuinely supports HDR.",
+                Flag(ini, "bUseHDRDisplayOutput") && Flag(ini, "bHDROutputEnabled"),
+                $"bUseHDRDisplayOutput={Value(ini, "bUseHDRDisplayOutput")}, bHDROutputEnabled={Value(ini, "bHDROutputEnabled")}"),
+
+            new DisplayTweak("dynamic_resolution", "Dynamic resolution (flags disagree)",
+                "bUseDynamicResolution and bUserDynResEnabled hold opposite values -- again the VSync pattern. This sets both together. Off means the game renders at a fixed resolution instead of quietly dropping it to hold framerate.",
+                Flag(ini, "bUseDynamicResolution") && Flag(ini, "bUserDynResEnabled"),
+                $"bUseDynamicResolution={Value(ini, "bUseDynamicResolution")}, bUserDynResEnabled={Value(ini, "bUserDynResEnabled")}"),
         ];
+    }
+
+
+    // ── resolution ─────────────────────────────────────────────────────────
+    // The file records three different things and they do not agree:
+    //   DesiredScreenWidth/Height  what the user asked for
+    //   ResolutionSizeX/Y          what the game actually renders
+    //   ResolutionPercentage       a further scale applied on top
+    //
+    // Observed in the wild: Desired 3840x2160, ResolutionSize 1920x1080,
+    // ResolutionPercentage 66.7 -- an internal render of roughly 1280x720 on a
+    // 4K panel, upscaled twice. The percentage was also BELOW the file's own
+    // MinResolutionPercentage of 74.01, which makes it a bug rather than a
+    // preference: a value is violating a floor the game itself wrote.
+    private static bool RenderMatchesDesired(string ini)
+    {
+        var desiredW = Number(ini, "DesiredScreenWidth", 0);
+        var actualW  = Number(ini, "ResolutionSizeX", 0);
+        if (desiredW <= 0 || actualW <= 0) return true;   // nothing to say
+
+        var pct = Number(ini, "ResolutionPercentage", 100);
+        var min = Number(ini, "MinResolutionPercentage", 0);
+        return Math.Abs(desiredW - actualW) < 1 && pct >= min;
+    }
+
+    private static string ResolutionSummary(string ini)
+    {
+        var desiredW = Number(ini, "DesiredScreenWidth", 0);
+        var desiredH = Number(ini, "DesiredScreenHeight", 0);
+        var actualW  = Number(ini, "ResolutionSizeX", 0);
+        var actualH  = Number(ini, "ResolutionSizeY", 0);
+        var pct      = Number(ini, "ResolutionPercentage", 100);
+        var min      = Number(ini, "MinResolutionPercentage", 0);
+
+        if (RenderMatchesDesired(ini))
+            return "Render resolution matches the resolution you selected.";
+
+        var parts = new List<string>();
+        if (Math.Abs(desiredW - actualW) >= 1)
+            parts.Add($"you selected {desiredW:0}x{desiredH:0} but the game renders {actualW:0}x{actualH:0}");
+        if (pct < min)
+            parts.Add($"and then scales that to {pct:0.#}%, below the file's own stated minimum of {min:0.#}%");
+
+        return "Resolution mismatch: " + string.Join(", ", parts)
+             + ". Enabling this sets the render resolution to the one you selected and lifts the scale back to the stated minimum.";
     }
 
     // ── writing ────────────────────────────────────────────────────────────
@@ -115,6 +182,55 @@ public static class GameSettings
             {
                 case "vsync":
                     Stage(ini, originals, writes, "bUseVSync", on ? "True" : "False");
+                    break;
+
+                case "render_resolution":
+                    if (on)
+                    {
+                        var w = Value(ini, "DesiredScreenWidth");
+                        var h = Value(ini, "DesiredScreenHeight");
+                        if (w is not null && h is not null)
+                        {
+                            var wi = ((int)double.Parse(w, CultureInfo.InvariantCulture))
+                                .ToString(CultureInfo.InvariantCulture);
+                            var hi = ((int)double.Parse(h, CultureInfo.InvariantCulture))
+                                .ToString(CultureInfo.InvariantCulture);
+                            Stage(ini, originals, writes, "ResolutionSizeX", wi);
+                            Stage(ini, originals, writes, "ResolutionSizeY", hi);
+                            Stage(ini, originals, writes, "LastUserConfirmedResolutionSizeX", wi);
+                            Stage(ini, originals, writes, "LastUserConfirmedResolutionSizeY", hi);
+                        }
+
+                        // Only ever raise the scale to the floor the game
+                        // itself declared. Not to 100: that would be us
+                        // choosing a performance level for the user, and the
+                        // defensible claim here is only "stop breaking your
+                        // own stated minimum".
+                        var pct = Number(ini, "ResolutionPercentage", 100);
+                        var min = Number(ini, "MinResolutionPercentage", 0);
+                        if (pct < min)
+                            Stage(ini, originals, writes, "ResolutionPercentage",
+                                min.ToString("0.000000", CultureInfo.InvariantCulture));
+                    }
+                    else
+                    {
+                        RestoreIfKnown(originals, writes, "ResolutionSizeX");
+                        RestoreIfKnown(originals, writes, "ResolutionSizeY");
+                        RestoreIfKnown(originals, writes, "LastUserConfirmedResolutionSizeX");
+                        RestoreIfKnown(originals, writes, "LastUserConfirmedResolutionSizeY");
+                        RestoreIfKnown(originals, writes, "ResolutionPercentage");
+                    }
+                    break;
+
+                case "hdr_output":
+                    // Both halves, same value. See the note at the tweak.
+                    Stage(ini, originals, writes, "bUseHDRDisplayOutput", on ? "True" : "False");
+                    Stage(ini, originals, writes, "bHDROutputEnabled",    on ? "True" : "False");
+                    break;
+
+                case "dynamic_resolution":
+                    Stage(ini, originals, writes, "bUseDynamicResolution", on ? "True" : "False");
+                    Stage(ini, originals, writes, "bUserDynResEnabled",    on ? "True" : "False");
                     break;
 
                 case "redo_autodetect":
@@ -140,6 +256,17 @@ public static class GameSettings
         }
         File.WriteAllLines(ini, lines);
         SaveOriginals(ini, originals);
+    }
+
+    /// <summary>
+    /// Put back the value recorded before we first touched this key. If we
+    /// never touched it there is nothing to restore, and inventing a
+    /// "default" would be a fresh edit wearing the word revert.
+    /// </summary>
+    private static void RestoreIfKnown(Dictionary<string, string> originals,
+        Dictionary<string, string> writes, string key)
+    {
+        if (originals.TryGetValue(key, out var was)) writes[key] = was;
     }
 
     /// <summary>Remember what was there before the first time we change it.</summary>

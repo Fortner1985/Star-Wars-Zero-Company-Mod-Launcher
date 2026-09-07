@@ -4,6 +4,8 @@ obj/
 # ...but bin/release is our build script, not build output
 !launcher/bin/
 !launcher/bin/release
+!bin/
+!bin/deploy
 dist/
 *.user
 
