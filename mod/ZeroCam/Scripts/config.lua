@@ -40,6 +40,20 @@ local Config = {
     -- lowest terrain point found, trigger recovery
     pitch_black_min_height_offset = -500.0,
 
+    -- === Spring arm writes (fixes #4 and #6) ===
+    -- Milliseconds to wait before writing each arm a second time, in case the
+    -- Blueprint construction script overwrites our first write.
+    --
+    -- 0 = OFF, and 0 is correct. An unguarded version of this retry is the
+    -- prime suspect for a fatal error on 2026-09-07: it wrote to spring arms
+    -- 250ms after construction, and combat destroys cinematic arms constantly,
+    -- so some of those writes landed on freed memory. The live run also showed
+    -- the retry was unnecessary -- values stick at construction time.
+    --
+    -- If you enable it, the code validates the object first. Do not remove
+    -- that check.
+    reapply_delay_ms = 0,
+
     -- === Fix #4: Terrain Clip-Through ===
     -- Applied to Collision_Boom / B_BoomA / B_BoomB on the Tactical_Pro_* and
     -- Explore_Pro_* camroids only. Ability_* and Cinematic_* rigs are left

@@ -38,13 +38,12 @@ function ClipThrough.init(state, config)
     local probe_size = cfg.probe_size or 24.0
     local probe_channel = cfg.probe_channel   -- nil = leave the game's choice alone
 
-    local applied, skipped = 0, 0
-
+    -- Returns true when it wrote to this arm. main.lua keeps the tally and
+    -- prints the summary once arms actually exist -- see each_spring_arm.
     local function apply(arm)
         local family, role = state.classify_arm(arm)
         if not state.is_gameplay_family(family) or not ARMS[role] then
-            skipped = skipped + 1
-            return
+            return false
         end
 
         local ok, err = pcall(function()
@@ -56,20 +55,20 @@ function ClipThrough.init(state, config)
         end)
 
         if ok then
-            applied = applied + 1
             state.log("debug", string.format(
                 "clip_through: %s.%s probe=%.1f", tostring(family), tostring(role), probe_size))
-        else
-            state.log("warn", "clip_through: write failed on " ..
-                tostring(family) .. "." .. tostring(role) .. " -- " .. tostring(err))
+            return true
         end
+
+        state.log("warn", "clip_through: write failed on " ..
+            tostring(family) .. "." .. tostring(role) .. " -- " .. tostring(err))
+        return false
     end
 
-    state.each_spring_arm(apply)
-
     state.log("info", string.format(
-        "clip_through: applied=%d skipped=%d probe_size=%.1f channel=%s",
-        applied, skipped, probe_size, tostring(probe_channel)))
+        "clip_through: probe_size=%.1f channel=%s", probe_size, tostring(probe_channel)))
+
+    state.each_spring_arm(apply, "clip_through")
 end
 
 return ClipThrough

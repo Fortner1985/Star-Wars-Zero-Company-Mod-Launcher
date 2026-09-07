@@ -23,15 +23,27 @@ oversold, and "untested" means untested.
 | Health check | ✅ Confirmed | Correctly diagnosed the silent loader failure that cost this project hours |
 | Mod toggles | ✅ Confirmed | Parses and re-emits `mods.txt` / `config.lua`, keeps `.zsbak` backups |
 | Object dump bridge | ✅ Confirmed | Produced a 160 MB UE4SS object dump on request |
-| ZeroCam #4 — terrain clip-through | ⚠️ **Untested** | Written 2026-09-07. Compiles. **Never run in a live game.** |
-| ZeroCam #6 — floaty exploration camera | ⚠️ **Untested** | Same. |
+| ZeroCam #4 — terrain clip-through | ⚠️ Applies correctly, effect unverified | Live run 2026-09-07: `applied=3` — exactly the three tactical positioning arms. Whether it *stops the clipping* is not yet confirmed. |
+| ZeroCam #6 — floaty exploration camera | ⚠️ Applies correctly, effect unverified | Live run: `applied=7`. Same caveat. |
+| Stability | 🔬 Under investigation | A fatal error occurred during the first live run. See below. |
 | ZeroCam #1 #2 #3 #5 | 🚧 Stubs | No-ops, shipped off by default. See Issues. |
 | Cutscene FPS drops | 🔬 Investigating | Cause not established. Help wanted. |
 
-If you run the two untested fixes, your log will contain a line like
-`clip_through: applied=6 skipped=103`. **Please open an issue with that line.**
-That single number is what turns "untested" into "confirmed", and you would be
-the first person to have that data.
+### Stability warning — read this before installing
+
+The first live run of these fixes ended in a fatal error. The most likely cause
+was a deferred re-write to spring arms that did not check whether the object
+still existed — combat destroys cinematic camera arms constantly, and writing to
+a destroyed one is an access violation. **That retry is now off by default and
+guarded when enabled** (`reapply_delay_ms = 0`).
+
+Honest uncertainty: this machine also produced three crash dumps earlier the
+same morning *before ZeroCam was ever enabled*, so the game crashes on its own
+too. We do not yet know whether the mod caused that crash or joined an existing
+problem. Treat this release as experimental and back up your saves.
+
+If you hit a crash with ZeroCam enabled, please open an issue with your
+`UE4SS.log` — that is what will settle it.
 
 ---
 

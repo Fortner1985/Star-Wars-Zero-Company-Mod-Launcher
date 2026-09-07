@@ -8,7 +8,12 @@ First public release.
 
 ### Added
 - ZeroCam #4 (terrain clip-through) and #6 (floaty exploration controls).
-  **Both untested in a live game** — see the status table in the README.
+  Confirmed **applying** in a live mission (`clip_through: applied=3`,
+  `floaty_controls: applied=7`) with 300+ cinematic arms correctly skipped.
+  Whether they fix the underlying camera problems is **not yet confirmed**.
+- Deferred summary reporting. The first version tallied at init — on the menu,
+  before any camroid exists — so it printed `applied=0` unconditionally and
+  could never report success.
 - Shared spring-arm classification in `main.lua` (`classify_arm`,
   `is_gameplay_family`, `each_spring_arm`), so the gameplay-vs-cinematic scoping
   rule lives in one place and cannot drift between fix modules.
@@ -24,6 +29,13 @@ First public release.
 
 ### Removed
 - `discovery.lua` is not shipped. Superseded by the object dump.
+
+### Security / stability
+- Removed an unguarded deferred write to spring arms. It wrote to each arm
+  250 ms after construction with no validity check; combat destroys cinematic
+  arms constantly, making it a use-after-free and the prime suspect for a fatal
+  error during the first live run. The retry is now off by default
+  (`reapply_delay_ms = 0`) and validates the object when enabled.
 
 ### Fixed
 - Corrected an analysis error before it became a false lead: camroid actors were

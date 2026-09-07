@@ -141,30 +141,107 @@ local function is_gameplay_family(family)
 end
 
 -- Runs `callback` over every spring arm that exists now, and over every one
--- created later. Deliberately NOT a polling loop: an unbounded rescan is a
--- documented past mistake in this codebase (see discovery.lua's header) and
--- a per-frame sweep of 109 components is a framerate bug waiting to be
--- filed as a camera bug. NotifyOnNewObject already covers level transitions,
--- which is the only time fresh arms appear.
+-- created later. `callback` returns true if it applied something, false or
+-- nil if it skipped.
+--
+-- Deliberately NOT a polling loop: an unbounded rescan is a documented past
+-- mistake in this codebase (see discovery.lua's header) and a per-frame sweep
+-- of 109 components is a framerate bug waiting to be filed as a camera bug.
+--
+-- Two things learned from the first live run (2026-09-07), both of which the
+-- first version got wrong:
+--
+-- 1. REPORTING. UE4SS starts mods at game startup, on the menu, where no
+--    camroid exists. FindAllOf therefore returns nothing and the old
+--    init-time summary printed "applied=0 skipped=0" every single time, no
+--    matter what happened afterwards. It was structurally incapable of
+--    reporting success. The summary is now deferred and reprinted as arms
+--    actually arrive, so the log says what really happened in a mission.
+--
+-- 2. CONSTRUCTION ORDER, and the crash it caused. NotifyOnNewObject fires
+--    when an object is constructed, possibly before the Blueprint
+--    construction script writes its own values. The first attempt at
+--    handling that captured the arm and wrote to it again 250ms later,
+--    unconditionally. That is a use-after-free: cinematic arms are created
+--    and destroyed constantly during combat (a single mission skipped 300+
+--    of them), and writing to a destroyed UObject is an access violation.
+--    The game took a fatal error five seconds after the last such write.
+--
+--    The retry is therefore OFF by default (`reapply_delay_ms = 0`), and
+--    when enabled it validates the object first. The live run also showed
+--    it was not needed: values landed at construction time and the applied
+--    counts held steady (clip_through=3, floaty_controls=7) rather than
+--    decaying, which is what an overwrite would have looked like.
+--
+--    Rule for anyone re-enabling this: a deferred write to a UObject must
+--    check IsValid immediately before writing, every time. A pcall does not
+--    save you here -- a write to freed memory takes the process down before
+--    Lua can catch anything.
 local function make_each_spring_arm(state)
-    return function(callback)
+    return function(callback, label)
         local stamped = {}
+        local applied, skipped = 0, 0
+        local reported = -1
+
+        -- Deferred summary. Reprints only when the numbers actually moved, so
+        -- a mission produces a couple of useful lines rather than a stream.
+        local function report()
+            if applied + skipped == reported then return end
+            reported = applied + skipped
+            state.log("info", string.format(
+                "%s: applied=%d skipped=%d", tostring(label), applied, skipped))
+        end
+
+        local function run(arm, is_retry)
+            local ok, did = pcall(callback, arm)
+            if not ok then
+                state.log("warn", tostring(label) .. ": callback failed -- " .. tostring(did))
+                return
+            end
+            if is_retry then return end          -- retry must not double-count
+            if did then applied = applied + 1 else skipped = skipped + 1 end
+        end
 
         local function once(arm)
             local key = arm_full_name(arm)
             if key and stamped[key] then return end
             if key then stamped[key] = true end
-            local ok, err = pcall(callback, arm)
-            if not ok then
-                state.log("warn", "spring arm callback failed: " .. tostring(err))
+
+            run(arm, false)
+
+            -- Optional reapply after the Blueprint construction script runs.
+            -- Off unless config asks for it; see the crash note above.
+            local delay = tonumber(state.config.reapply_delay_ms) or 0
+            if delay > 0 and type(ExecuteWithDelay) == "function" then
+                pcall(ExecuteWithDelay, delay, function()
+                    -- The object may have been destroyed in the meantime.
+                    -- This guard is the difference between a retry and a crash.
+                    local ok, alive = pcall(function() return arm:IsValid() end)
+                    if ok and alive then
+                        pcall(run, arm, true)
+                    end
+                end)
+            end
+
+            if type(ExecuteWithDelay) == "function" then
+                pcall(ExecuteWithDelay, 3000, report)
             end
         end
 
         local ok, arms = pcall(FindAllOf, "SpringArmComponent")
         if ok and type(arms) == "table" then
             for _, arm in pairs(arms) do once(arm) end
+        end
+
+        -- Not a warning any more. At startup this is the normal, expected
+        -- state: the camroids do not exist until a mission loads. Calling it
+        -- a warning sent a real person hunting a bug that was not there.
+        if applied + skipped == 0 then
+            state.log("info", string.format(
+                "%s: armed, waiting for a mission (no spring arms exist yet)",
+                tostring(label)))
         else
-            state.log("warn", "FindAllOf(SpringArmComponent) returned nothing")
+            report()
         end
 
         pcall(NotifyOnNewObject, "/Script/Engine.SpringArmComponent", once)

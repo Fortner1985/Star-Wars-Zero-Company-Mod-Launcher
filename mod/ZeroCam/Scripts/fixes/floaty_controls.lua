@@ -41,13 +41,12 @@ function FloatyControls.init(state, config)
     local rot_speed  = config.exploration_rotation_lag_speed or 15.0
     local max_dist   = config.exploration_lag_max_distance or 50.0
 
-    local applied, skipped = 0, 0
-
+    -- Returns true when it wrote to this arm. main.lua keeps the tally and
+    -- prints the summary once arms actually exist -- see each_spring_arm.
     local function apply(arm)
         local family, role = state.classify_arm(arm)
         if family ~= "Explore" or SKIP[role] then
-            skipped = skipped + 1
-            return
+            return false
         end
 
         local ok, err = pcall(function()
@@ -64,19 +63,20 @@ function FloatyControls.init(state, config)
         end)
 
         if ok then
-            applied = applied + 1
             state.log("debug", "floaty_controls: Explore." .. tostring(role))
-        else
-            state.log("warn", "floaty_controls: write failed on Explore." ..
-                tostring(role) .. " -- " .. tostring(err))
+            return true
         end
+
+        state.log("warn", "floaty_controls: write failed on Explore." ..
+            tostring(role) .. " -- " .. tostring(err))
+        return false
     end
 
-    state.each_spring_arm(apply)
-
     state.log("info", string.format(
-        "floaty_controls: applied=%d skipped=%d mode=%s lag=%.1f/%.1f",
-        applied, skipped, disable and "lag_off" or "snappier", lag_speed, rot_speed))
+        "floaty_controls: mode=%s lag=%.1f/%.1f",
+        disable and "lag_off" or "snappier", lag_speed, rot_speed))
+
+    state.each_spring_arm(apply, "floaty_controls")
 end
 
 return FloatyControls

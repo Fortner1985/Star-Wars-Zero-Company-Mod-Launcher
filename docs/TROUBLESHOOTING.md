@@ -26,6 +26,17 @@ The fix ran but changed nothing. Most likely one of:
   startup and clipping still happens in play, this is very likely the cause —
   please say so in an issue, it is exactly the evidence we lack.
 
+## The game crashed with ZeroCam enabled
+
+Known possibility, and we want the report. A fatal error occurred during the
+first live run of these fixes. The suspected cause — an unguarded deferred write
+to camera components — has been removed, but this is not proven, and the same
+machine crashed three times that morning with the mod disabled.
+
+If it happens to you, open an issue with your `UE4SS.log` and whether
+`reapply_delay_ms` is anything other than `0`. Do not re-enable that setting
+unless you are debugging this specific question.
+
 ## The camera feels wrong after installing
 
 Both active fixes are scoped to gameplay cameras only. If ability or cinematic
