@@ -31,6 +31,7 @@ to watch the game do the thing.
 | #2 Blind spot | Reinforcement event timing and in-flight blend parameters. Hardest of the four. |
 | #3 Enemy-turn lock | Which function fires at turn change, and what disables input. |
 | #5 Pitch-black | A watchdog over live camera Z. Inherently runtime. |
+| #7 Cut-plane opacity | Stage 1 is in and read-only. Needs one log line (`cut_plane:` in UE4SS.log) naming the material scalar, then stage 2 is short. |
 | Cutscene FPS | Cause not established. See below. |
 
 ### The FPS investigation
@@ -47,6 +48,11 @@ at shot start (game thread), or cinematic depth-of-field through the shot (GPU).
 distinguish them. That measurement is worth more than any patch right now.
 
 ## House rules
+
+**A deferred write to a UObject must check `IsValid` immediately before
+writing, every time.** A `pcall` will not save you: a write to freed memory
+takes the process down before Lua can catch anything. This rule exists because
+breaking it crashed the game (see docs/STATUS.md).
 
 **Never claim something works that you have not watched work.** The status table
 in the README is the project's most valuable asset. If you add a fix, mark it

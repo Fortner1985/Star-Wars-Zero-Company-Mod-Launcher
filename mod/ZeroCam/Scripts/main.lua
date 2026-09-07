@@ -289,6 +289,8 @@ local FIX_MODULES = {
     { name = "clip_through",    file = "fixes.clip_through"    },
     { name = "pitch_black",     file = "fixes.pitch_black"     },
     { name = "floaty_controls", file = "fixes.floaty_controls" },
+    { name = "cut_plane",       file = "fixes.cut_plane"       },
+    { name = "cut_plane",       file = "fixes.cut_plane"       },
 }
 
 local function load_fixes(state, config)
@@ -356,7 +358,7 @@ local function main()
         state.log("info", string.format(
             "Fix loading complete: %d loaded, %d failed, %d disabled",
             loaded, failed,
-            6 - loaded - failed
+            #FIX_MODULES - loaded - failed
         ))
 
         if failed > 0 then

@@ -26,6 +26,7 @@ oversold, and "untested" means untested.
 | ZeroCam #4 — terrain clip-through | ⚠️ Applies correctly, effect unverified | Live run 2026-09-07: `applied=3` — exactly the three tactical positioning arms. Whether it *stops the clipping* is not yet confirmed. |
 | ZeroCam #6 — floaty exploration camera | ⚠️ Applies correctly, effect unverified | Live run: `applied=7`. Same caveat. |
 | Stability | 🔬 Under investigation | A fatal error occurred during the first live run. See below. |
+| ZeroCam #7 — cut-plane opacity | 🔬 Stage 1, read-only | Writes nothing. Waiting on one log line to learn the material parameter name. |
 | ZeroCam #1 #2 #3 #5 | 🚧 Stubs | No-ops, shipped off by default. See Issues. |
 | Cutscene FPS drops | 🔬 Investigating | Cause not established. Help wanted. |
 
@@ -98,6 +99,13 @@ specific: **if the game updates, it may stop working.** Open an issue if that
 happens rather than assuming ZeroCam regressed.
 
 ---
+
+## Where this stands right now
+
+**[docs/STATUS.md](docs/STATUS.md) is the handoff document** — current state,
+next actions in priority order, the crash post-mortem, two corrections to
+things that were confidently believed and wrong, and the mistakes a newcomer
+will make. Read it before touching anything.
 
 ## Contributing
 

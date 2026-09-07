@@ -17,6 +17,12 @@ First public release.
 - Shared spring-arm classification in `main.lua` (`classify_arm`,
   `is_gameplay_family`, `each_spring_arm`), so the gameplay-vs-cinematic scoping
   rule lives in one place and cannot drift between fix modules.
+- ZeroCam #7 (object-hiding cut-plane opacity), **stage 1: read-only**. Reports
+  the live `BitReactorObjectHidingSettings` values so stage 2 can be written
+  against the real material parameter name instead of a guess. Piggybacks on the
+  existing spring-arm notification rather than adding a timer.
+- `docs/STATUS.md` — handoff document: state, next actions, crash post-mortem,
+  corrections, and the traps a newcomer will hit.
 - `docs/CAMERA_ARCHITECTURE.md` — the camera system as actually mapped from a
   UE4SS object dump, replacing guesswork.
 - Apache 2.0 licence, NOTICE, PATENTS.md, contribution guide, issue templates.

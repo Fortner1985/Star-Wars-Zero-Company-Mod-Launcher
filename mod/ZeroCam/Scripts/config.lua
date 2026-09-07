@@ -26,6 +26,8 @@ local Config = {
         clip_through     = true,   -- Fix #4: Prevent terrain clip-through  [ACTIVE]
         pitch_black      = false,  -- Fix #5: STUB
         floaty_controls  = true,   -- Fix #6: Reduce floaty third-person camera  [ACTIVE]
+        cut_plane        = true,   -- Fix #7: Cut-plane opacity  [STAGE 1: READ-ONLY]
+        cut_plane        = true,   -- Fix #7: Object-hiding cut plane  [PROBE ONLY]
     },
 
     -- === Fix #3: Enemy Turn Lock ===
@@ -39,6 +41,15 @@ local Config = {
     -- Z-coordinate threshold; if camera drops below this relative to the
     -- lowest terrain point found, trigger recovery
     pitch_black_min_height_offset = -500.0,
+
+    -- === Fix #7: Object-hiding cut plane ===
+    -- The blue plane shown when the camera drops below a floor. Intended game
+    -- behaviour, not a bug -- this only makes it tunable.
+    --
+    -- 1.0 = fully solid, 0.0 = invisible. Lower is more see-through.
+    -- NOT YET APPLIED: fix #7 is read-only until the log tells us the real
+    -- material parameter name. Setting this now does nothing.
+    cut_plane_opacity = 0.35,
 
     -- === Spring arm writes (fixes #4 and #6) ===
     -- Milliseconds to wait before writing each arm a second time, in case the
@@ -66,6 +77,29 @@ local Config = {
         -- alone, which is the safe default; set a number only if clipping
         -- persists and you know the channel you want.
         probe_channel = nil,
+    },
+
+    -- === Fix #7: Object-Hiding Cut Plane ===
+    -- The blue plane drawn when the camera drops below a floor. This is
+    -- intended game behaviour, not a clipping bug -- it was mistaken for one.
+    --
+    -- With this table empty the fix WRITES NOTHING. It only reads the live
+    -- settings object and logs its values, which the object dump could not
+    -- give us. Fill in a key below to override that value.
+    --
+    -- Opacity is not settable from here yet: none of these is an opacity
+    -- float. It almost certainly lives inside the cut plane material as a
+    -- named scalar parameter, and the probe log is how we find its name.
+    --
+    -- Available keys (all numbers), commented out until we know the originals:
+    --   DefaultCutHeightOffset       how far below the floor the cut sits
+    --   OpacityFadeCurveLength       length of the opacity fade
+    --   DefaultOpaqueTransitionTime  time to reach full opacity
+    --   EdgeFadeCurveLength          softness at the plane edges
+    --   IntroCurveLength / OutroCurveLength
+    cut_plane = {
+        -- DefaultOpaqueTransitionTime = 0.05,
+        -- EdgeFadeCurveLength = 0.0,
     },
 
     -- === Fix #6: Floaty Controls ===
