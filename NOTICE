@@ -1,0 +1,35 @@
+Star Wars Zero Company Mod Launcher (ZeroSuite)
+Copyright 2026 Player ONE (Fortner1985)
+
+Licensed under the Apache License, Version 2.0. See LICENSE.
+
+--------------------------------------------------------------------------
+Third-party components
+--------------------------------------------------------------------------
+
+UE4SS (RE-UE4SS)
+  https://github.com/UE4SS-RE/RE-UE4SS
+  NOT redistributed by this project. ZeroSuite downloads UE4SS from its
+  official release URL at run time. UE4SS is licensed by its own authors
+  under its own terms; nothing in this repository alters them.
+
+Squad Six (community.squad-six, v1.1.4)
+  A third-party community mod by another author. NOT redistributed here and
+  NOT licensed under Apache 2.0 — the distributed package carries no licence
+  file, so we have no redistribution right.
+
+  This repository contains only our own patches against it, in
+  patches/squad-six/, which are our work and are Apache 2.0. To use them you
+  must obtain Squad Six yourself from its original source.
+
+  If you are the author of Squad Six and want these patches upstreamed, or
+  want them taken down, please open an issue.
+
+--------------------------------------------------------------------------
+Trademarks
+--------------------------------------------------------------------------
+
+Not affiliated with, endorsed by, or connected to Lucasfilm Ltd., The Walt
+Disney Company, Bit Reactor, or Respawn Entertainment. "Star Wars" and all
+related marks are trademarks of Lucasfilm Ltd. This is an unofficial,
+non-commercial fan project.

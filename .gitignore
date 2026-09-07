@@ -1,0 +1,23 @@
+# Build output
+bin/
+obj/
+# ...but bin/release is our build script, not build output
+!launcher/bin/
+!launcher/bin/release
+dist/
+*.user
+
+# Never commit these — they are huge, machine-specific, and may contain paths
+*ObjectDump*.txt
+*.usmap
+*.dmp
+UE4SS.log
+discovery*.txt
+
+# Backups the launcher writes
+*.zsbak
+*.bak
+
+# OS
+.DS_Store
+Thumbs.db

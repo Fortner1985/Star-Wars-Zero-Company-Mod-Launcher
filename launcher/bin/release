@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Build ZeroSuite as a self-contained single file. No .NET runtime needed on
+# the end user's machine.
+set -e
+cd "$(dirname "$0")/.."
+dotnet publish src/ZeroSuite.App/ZeroSuite.App.csproj \
+  -c Release -o dist "$@"
+echo "-> dist/ZeroSuite.exe"

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>ZeroSuite</AssemblyName>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <!-- Not PublishSingleFile. WPF's font cache builds a URI from the app
+         base directory, which a single-file bundle does not materialise:
+         MS.Internal.FontCache.Util's static constructor throws "Invalid URI"
+         before any window exists, and the self-extract flags did not fix it.
+         A self-contained folder still needs no .NET install on the user's
+         machine, which was the actual requirement. -->
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ZeroSuite.Core\ZeroSuite.Core.csproj" />
+  </ItemGroup>
+</Project>

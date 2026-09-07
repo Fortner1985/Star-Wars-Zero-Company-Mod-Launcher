@@ -1,0 +1,36 @@
+name: "Camera issue"
+description: "A camera problem in the game — whether or not this mod is involved."
+title: "[camera] "
+labels: ["camera"]
+body:
+  - type: markdown
+    attributes:
+      value: "Four camera fixes are stubs. If you are hitting one of them, say so here and it helps prioritise."
+  - type: dropdown
+    id: which
+    attributes:
+      label: Which issue
+      options:
+        - "#1 Forced action camera (plays despite the setting being off)"
+        - "#2 Blind spot during reinforcements"
+        - "#3 Camera locked during enemy turn"
+        - "#4 Camera clips through terrain"
+        - "#5 Pitch black — map disappears, UI stays"
+        - "#6 Floaty exploration camera"
+        - "Cutscene FPS drops"
+        - "Something else"
+    validations:
+      required: true
+  - type: textarea
+    id: when
+    attributes:
+      label: When does it happen?
+      description: "Every time, or only sometimes? Tactical or exploration? During an ability shot?"
+    validations:
+      required: true
+  - type: textarea
+    id: stat
+    attributes:
+      label: "For FPS issues: output of `stat unit` during the drop"
+      description: "Console is bound to tilde / F10. `Game` spiking and `GPU` spiking point at completely different fixes, so this is genuinely decisive."
+      render: text

@@ -1,0 +1,45 @@
+name: "Fix report (did it work on your machine?)"
+description: "The most useful issue you can open. Two camera fixes have only ever run on one PC."
+title: "[fix-report] "
+labels: ["fix-report", "help wanted"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you — this is the single most valuable contribution to this project.
+        ZeroCam #4 and #6 shipped **untested on any machine but the developer's**.
+        Your log line is what turns "untested" into "confirmed".
+  - type: textarea
+    id: applied
+    attributes:
+      label: The applied= lines from UE4SS.log
+      description: "Search UE4SS.log for ZeroCam. Load into a mission first — the gameplay cameras do not exist on the main menu."
+      placeholder: |
+        [ZeroCam][INFO] clip_through: applied=6 skipped=103 probe_size=24.0 channel=nil
+        [ZeroCam][INFO] floaty_controls: applied=4 skipped=105 mode=snappier lag=20.0/15.0
+      render: text
+    validations:
+      required: true
+  - type: dropdown
+    id: clip
+    attributes:
+      label: "#4 Terrain clip-through — did the camera stop going through walls?"
+      options: ["Better", "No difference", "Worse", "Did not test"]
+    validations:
+      required: true
+  - type: dropdown
+    id: floaty
+    attributes:
+      label: "#6 Floaty controls — does the exploration camera feel more responsive?"
+      options: ["Better", "No difference", "Worse", "Did not test"]
+    validations:
+      required: true
+  - type: input
+    id: build
+    attributes:
+      label: Game build number
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: "Especially: did anything look wrong during ability or cutscene shots? Those rigs should be untouched, and if they are not, that is a serious bug."

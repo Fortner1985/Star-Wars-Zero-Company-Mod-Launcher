@@ -1,0 +1,104 @@
+# Star Wars Zero Company — Mod Launcher (ZeroSuite)
+
+A launcher and camera-fix mod for the PC port of **Star Wars Zero Company**
+(Steam App ID `2075800`), built on [UE4SS](https://github.com/UE4SS-RE/RE-UE4SS).
+
+Most mod managers install files and stop there. This project exists because
+installing the files turned out to be the easy half. On this game, UE4SS can
+fail to start its Lua VM at all — and when that happens **every mod silently
+does nothing, with no mod-specific error anywhere**. You are left staring at a
+correctly-installed mod that appears broken. ZeroSuite detects that state and
+says so in plain language.
+
+---
+
+## Honest status
+
+This table is the most important thing in this README. Nothing here is
+oversold, and "untested" means untested.
+
+| Component | State | How we know |
+|---|---|---|
+| Game detection | ✅ Confirmed | Resolves your Steam install via `libraryfolders.vdf`, any library drive |
+| Health check | ✅ Confirmed | Correctly diagnosed the silent loader failure that cost this project hours |
+| Mod toggles | ✅ Confirmed | Parses and re-emits `mods.txt` / `config.lua`, keeps `.zsbak` backups |
+| Object dump bridge | ✅ Confirmed | Produced a 160 MB UE4SS object dump on request |
+| ZeroCam #4 — terrain clip-through | ⚠️ **Untested** | Written 2026-09-07. Compiles. **Never run in a live game.** |
+| ZeroCam #6 — floaty exploration camera | ⚠️ **Untested** | Same. |
+| ZeroCam #1 #2 #3 #5 | 🚧 Stubs | No-ops, shipped off by default. See Issues. |
+| Cutscene FPS drops | 🔬 Investigating | Cause not established. Help wanted. |
+
+If you run the two untested fixes, your log will contain a line like
+`clip_through: applied=6 skipped=103`. **Please open an issue with that line.**
+That single number is what turns "untested" into "confirmed", and you would be
+the first person to have that data.
+
+---
+
+## What it does
+
+**The launcher (ZeroSuite)**
+
+- Finds your game automatically across every Steam library drive
+- Reads `UE4SS.log` and tells you whether the loader actually started — the
+  difference between "your mod is broken" and "nothing ran at all"
+- Toggles mods and individual camera fixes, backing up each file it edits
+- Requests a UE4SS object dump from inside a running mission
+- Reads (never rewrites) third-party `zcom-mod.json` manifests, so it coexists
+  with ZCOM Mod Manager instead of fighting it
+
+**ZeroCam (the mod)** — two fixes active, four stubs:
+
+- **#4 Terrain clip-through** — forces collision probing on the spring arms that
+  position the tactical and exploration cameras
+- **#6 Floaty controls** — cuts interpolation lag on the exploration camera
+
+Both are scoped to gameplay cameras only. Ability and cinematic camera rigs are
+left alone on purpose: those shots pass through geometry and carry motion
+deliberately, and "fixing" them would wreck every ability cutscene. See
+[docs/CAMERA_ARCHITECTURE.md](docs/CAMERA_ARCHITECTURE.md).
+
+---
+
+## Install
+
+Full guide: **[docs/INSTALL.md](docs/INSTALL.md)**. Short version:
+
+1. Download the latest release, unzip anywhere, run `ZeroSuite.exe`.
+   No .NET install needed — it ships self-contained.
+2. Let it locate your game, or browse to it.
+3. Use the health panel to confirm UE4SS is actually running.
+4. Toggle the fixes you want, click Apply, launch the game.
+
+**Requires UE4SS `v3.0.1-1125-g527a483b` (experimental-latest) or newer.** The
+stock v3.0.1 release from Feb 2024 **cannot load this game at all** — its
+pattern scan times out and no mod runs. If mods appear to do nothing, this is
+almost always why, and the health panel will tell you.
+
+UE4SS is fetched from its official release page and is **not** redistributed here.
+
+### UE 5.6 signature file
+
+This game needs `ue4ss/UE4SS_Signatures/StaticConstructObject.lua` present or
+UE4SS cannot finish its scan. This is a known upstream UE 5.6 issue affecting
+many titles (RE-UE4SS #1197, #1204, #1289, #1311). The file is game-build
+specific: **if the game updates, it may stop working.** Open an issue if that
+happens rather than assuming ZeroCam regressed.
+
+---
+
+## Contributing
+
+Yes, please — see **[CONTRIBUTING.md](CONTRIBUTING.md)**. The four stub fixes
+are deliberately left in the repo with their reasoning written out, so anyone
+can pick one up. The most valuable contribution right now is not code: it is a
+log line from a real machine that is not the developer's.
+
+## Licence
+
+[Apache 2.0](LICENSE) — free for anyone to use, modify and redistribute. See
+**[PATENTS.md](PATENTS.md)** for the patent posture: this is published so that
+it stays free, and so nobody can lock it up.
+
+Not affiliated with, endorsed by, or connected to Lucasfilm, Disney, Bit
+Reactor, or Respawn. "Star Wars" is a trademark of Lucasfilm Ltd.

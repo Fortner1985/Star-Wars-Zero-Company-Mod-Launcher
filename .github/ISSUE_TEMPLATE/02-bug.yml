@@ -1,0 +1,35 @@
+name: "Bug"
+description: "Something is broken."
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Before filing:** if a mod "does nothing", check the loader first.
+        `Fatal Error: PS scan timed out` in UE4SS.log means UE4SS never started
+        and no mod ran at all. See docs/TROUBLESHOOTING.md.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Relevant UE4SS.log lines
+      description: "Attach the file rather than pasting all of it."
+      render: text
+  - type: input
+    id: versions
+    attributes:
+      label: "Versions (game build, UE4SS, ZeroSuite)"
+    validations:
+      required: true
